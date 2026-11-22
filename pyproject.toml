@@ -1,7 +1,7 @@
 [project]
 name = "budget-manager"
 version = "0.1.0"
-description = "Add your description here"
+description = ""CLI to record income and expenses, list and summarize them by month, and back up the data""
 readme = "README.md"
 authors = [
     { name = "Gabriel Deamond", email = "175671615+gadeamonda@users.noreply.github.com" }
