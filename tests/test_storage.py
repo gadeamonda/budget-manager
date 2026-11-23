@@ -112,7 +112,18 @@ def test_failed_save_keeps_original_file(tmp_path, monkeypatch):
     before = path.read_bytes()
 
     # monkeypatch replaces os.fsync inside storage only during this test,
-    # to simulate the disk
+    # to simulate the disk failing in the middle of a write.
+    def broken_fsync(fd):
+        raise OSError("disk full (simulated)")
+
+    monkeypatch.setattr(storage.os, "fsync", broken_fsync)
+
+    with pytest.raises(OSError):
+        save_transactions(path, TRANSACTIONS + TRANSACTIONS)
+
+    assert path.read_bytes() == before
+    assert list(tmp_path.glob("*.tmp")) == []
+
 
 def test_backup_creates_identical_copy(tmp_path):
     path = tmp_path / "transactions.json"

@@ -12,4 +12,4 @@ wheels/
 
 # Project data and backups
 backups/
-data/transactions.csv
+data/transactions.json

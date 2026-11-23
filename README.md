@@ -60,6 +60,7 @@ uv run budget list --month 2026-11
 uv run budget summary
 uv run budget summary --month 2026-11
 uv run budget backup
+uv run budget backup backup.json
 uv run budget --help
 ```
 
@@ -73,7 +74,7 @@ entered either way follows exactly the same rules.
 | `add AMOUNT --category C` | Adds one transaction | `--kind` (default `expense`), `--date` (default today), `--currency` (default `EUR`) |
 | `list` | Shows transactions sorted by date | `--month YYYY-MM` |
 | `summary` | Income, expenses, balance and expenses by category | `--month YYYY-MM` |
-| `backup` | Copies the data file to `backups/` with a timestamp | `--keep N` (default 7), `--backup-dir` |
+| `backup [FILE]` | Copies the data file to FILE, or to `backups/` with a timestamp | `--keep N` (default 7, timestamped backups only), `--backup-dir` |
 | `interactive` | Enters several transactions in one session | |
 
 All commands accept `--data PATH` before the command name to use another data
