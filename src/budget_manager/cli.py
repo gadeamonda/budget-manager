@@ -56,6 +56,10 @@ def build_parser() -> argparse.ArgumentParser:
     summary.add_argument("--month", help="only this month, YYYY-MM")
 
     backup_cmd = commands.add_parser("backup", help="copy the data file to backups/")
+    backup_cmd.add_argument(
+        "destination", nargs="?", type=Path, default=None,
+        help="optional file to copy to (default: backups/<name>-<timestamp>.json)",
+    )
     backup_cmd.add_argument("--keep", type=int, default=7, help="backups to keep (default: 7)")
     backup_cmd.add_argument("--backup-dir", type=Path, default=DEFAULT_BACKUPS)
 
@@ -112,7 +116,9 @@ def cmd_summary(args, transactions) -> int:
 
 
 def cmd_backup(args) -> int:
-    destination = backup(args.data, args.backup_dir, keep=args.keep)
+    destination = backup(
+        args.data, args.backup_dir, keep=args.keep, destination=args.destination
+    )
     print(f"Backup created: {destination}")
     return 0
 

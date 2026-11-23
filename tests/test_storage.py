@@ -113,3 +113,38 @@ def test_failed_save_keeps_original_file(tmp_path, monkeypatch):
 
     # monkeypatch replaces os.fsync inside storage only during this test,
     # to simulate the disk
+
+def test_backup_to_given_destination(tmp_path):
+    path = tmp_path / "transactions.json"
+    save_transactions(path, TRANSACTIONS)
+    target = tmp_path / "copies" / "backup.json"
+
+    copy = backup(path, tmp_path / "backups", destination=target)
+
+    assert copy == target
+    assert target.read_bytes() == path.read_bytes()
+
+
+def test_backup_never_overwrites_given_destination(tmp_path):
+    path = tmp_path / "transactions.json"
+    save_transactions(path, TRANSACTIONS)
+    target = tmp_path / "backup.json"
+    target.write_text("old backup", encoding="utf-8")
+
+    with pytest.raises(StorageError, match="already exists"):
+        backup(path, tmp_path / "backups", destination=target)
+
+    assert target.read_text(encoding="utf-8") == "old backup"
+
+
+def test_backup_with_destination_does_not_delete_other_backups(tmp_path):
+    path = tmp_path / "transactions.json"
+    save_transactions(path, TRANSACTIONS)
+    backup_dir = tmp_path / "backups"
+    backup_dir.mkdir()
+    for day in range(1, 6):
+        (backup_dir / f"transactions-2026010{day}-000000.json").write_text("[]")
+
+    backup(path, backup_dir, keep=1, destination=tmp_path / "extra.json")
+
+    assert len(list(backup_dir.iterdir())) == 5
