@@ -137,6 +137,22 @@ def validate_date(value) -> str:
     return cleaned
 
 
+def validate_month(value) -> str:
+    """Return the month as text in the exact format YYYY-MM, e.g. "2026-09"."""
+    if not isinstance(value, str):
+        raise ValueError(f"month must be text in YYYY-MM format, got {value!r}")
+    cleaned = value.strip()
+    try:
+        parsed = date.fromisoformat(f"{cleaned}-01")
+    except ValueError:
+        raise ValueError(
+            f"month must be a real month in YYYY-MM format, got {value!r}"
+        ) from None
+    if parsed.isoformat()[:7] != cleaned:
+        raise ValueError(f"month must be in YYYY-MM format, got {value!r}")
+    return cleaned
+
+
 def validate_id(value) -> str:
     """Return the id if it looks like "T" followed by digits, e.g. "T001"."""
     # 1. Type: only text is accepted.
