@@ -1,2 +1,1 @@
-def main() -> None:
-    print("Hello from budget-manager!")
+"""Personal budget manager: validated transactions with JSON storage."""

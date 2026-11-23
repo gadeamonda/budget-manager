@@ -58,7 +58,7 @@ def validate_kind(value) -> str:
     # 2. Clean: no spaces around it, lowercase
     cleaned = value.strip().lower()
 
-    # 3. Rule: must be on of the allowed kinds
+    # 3. Rule: must be one of the allowed kinds
     if cleaned not in KINDS:
         raise ValueError(f"kind must be one of: {_format_allowed(KINDS)}, got {value!r}")
 
@@ -79,7 +79,7 @@ def validate_category(value) -> str:
     # 2. Clean: no spaces around it, lowercase
     cleaned = value.strip().lower()
 
-    # 3. Rule: must be on of the allowed categoriess
+    # 3. Rule: must be one of the allowed categories
     if cleaned not in CATEGORIES:
         raise ValueError(f"unknown category {value!r}; use one of {_format_allowed(CATEGORIES)}")
 
@@ -96,10 +96,10 @@ def validate_currency(value) -> str:
     if not isinstance(value, str):
         raise ValueError(f"currency must be text, got {value!r}")
     
-    # 2. Clean: no spaces around it, lowercase
+    # 2. Clean: no spaces around it, uppercase
     cleaned = value.strip().upper()
 
-    # 3. Rule: must be on of the allowed currencies
+    # 3. Rule: must be one of the allowed currencies
     if cleaned not in CURRENCIES:
         raise ValueError(f"unsupported currency {value!r}; use one of {_format_allowed(CURRENCIES)}")
 
@@ -184,7 +184,7 @@ def parse_record(record, index: int) -> Transaction:
     Any error is raised again with the position and id in front:
     "Record 4 (T004): amount must be > 0, got -12.0"
     """
-        # 1. Type: each record in the JSON list must be an object (dict).
+    # 1. Type: each record in the JSON list must be an object (dict).
     if not isinstance(record, dict):
         raise ValueError(
             f"Record {index}: must be an object with fields, got {record!r}"
