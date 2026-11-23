@@ -1,0 +1,8 @@
+[
+  {"id": "T001", "date": "2026-09-01", "kind": "income", "category": "salary", "amount": 2500.00, "currency": "EUR"},
+  {"id": "T002", "date": "2026-09-04", "kind": "expense", "category": "food", "amount": 18.50, "currency": "EUR"},
+  {"id": "T003", "date": "2026-09-10", "kind": "expense", "category": "transport", "amount": 45.00, "currency": "EUR"},
+  {"id": "T004", "date": "2026-09-12", "kind": "expense", "category": "food", "amount": -12.00, "currency": "EUR"},
+  {"id": "T005", "date": "2026-09-15", "kind": "expense", "category": "pizza", "amount": 10.00, "currency": "EUR"},
+  {"id": "T006", "date": "2026-13-01", "kind": "expense", "category": "food", "amount": 8.00, "currency": "EUR"}
+]
