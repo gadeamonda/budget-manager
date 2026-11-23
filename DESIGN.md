@@ -66,8 +66,9 @@ entered. Services are pure functions, which makes them testable without files.
 - Each backup is verified (same bytes, readable JSON) before anything else
   happens. If verification fails, the bad copy is removed and the command
   exits with code 1.
-- Backup names include the timestamp to the second, and an existing backup is
-  never overwritten.
+- Without a destination, backup names include the timestamp to the second.
+  With a destination (`budget backup backup.json`, as in the course example),
+  that exact file is used. In both cases an existing file is never overwritten.
 - Only after a successful verification are old backups removed, keeping the
   newest 7 by default (`--keep`). The newest backup is never deleted.
 - A missing data file is an error (exit 1), not an empty backup.

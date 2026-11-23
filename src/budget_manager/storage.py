@@ -91,11 +91,16 @@ def save_transactions(path: Path, transactions: list[Transaction]) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def backup(path: Path, backup_dir: Path, keep: int = 7) -> Path:
-    """Copy the data file to backup_dir with a timestamp and return the copy's path.
+def backup(
+    path: Path, backup_dir: Path, keep: int = 7, destination: Path | None = None
+) -> Path:
+    """Copy the data file and return the copy's path.
 
+    - destination given -> copy to exactly that file (never overwrites it).
+    - no destination -> backup_dir/<name>-<timestamp>.json, and only the
+      newest `keep` timestamped backups are kept.
     The copy is verified (same bytes, readable JSON) before old backups are
-    removed. Only the newest `keep` backups are kept. Never overwrites a backup.
+    removed.
     """
     path = Path(path)
     backup_dir = Path(backup_dir)
@@ -104,13 +109,19 @@ def backup(path: Path, backup_dir: Path, keep: int = 7) -> Path:
     if not path.exists():
         raise StorageError(f"nothing to back up: {path} does not exist")
 
-    backup_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    destination = backup_dir / f"{path.stem}-{stamp}{path.suffix}"
+    if destination is None:
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        destination = backup_dir / f"{path.stem}-{stamp}{path.suffix}"
+        rotate = True
+    else:
+        destination = Path(destination)
+        rotate = False
+
     if destination.exists():
-        raise StorageError(f"backup {destination} already exists; try again in a second")
+        raise StorageError(f"backup {destination} already exists; it was not overwritten")
 
     try:
+        destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, destination)
     except OSError as error:
         raise StorageError(f"cannot create backup {destination}: {error}") from None
@@ -125,9 +136,11 @@ def backup(path: Path, backup_dir: Path, keep: int = 7) -> Path:
         destination.unlink(missing_ok=True)
         raise StorageError(f"backup {destination} could not be verified and was removed")
 
-    # Retention: names contain the timestamp, so sorting by name is by date.
-    backups = sorted(backup_dir.glob(f"{path.stem}-*{path.suffix}"))
-    for old in backups[:-keep]:
-        old.unlink()
+    # Retention, only for automatic backups: names contain the timestamp,
+    # so sorting by name is sorting by date.
+    if rotate:
+        backups = sorted(backup_dir.glob(f"{path.stem}-*{path.suffix}"))
+        for old in backups[:-keep]:
+            old.unlink()
 
     return destination

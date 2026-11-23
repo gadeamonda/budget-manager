@@ -113,3 +113,82 @@ def test_failed_save_keeps_original_file(tmp_path, monkeypatch):
 
     # monkeypatch replaces os.fsync inside storage only during this test,
     # to simulate the disk
+
+def test_backup_creates_identical_copy(tmp_path):
+    path = tmp_path / "transactions.json"
+    save_transactions(path, TRANSACTIONS)
+
+    copy = backup(path, tmp_path / "backups")
+
+    assert copy.exists()
+    assert copy.read_bytes() == path.read_bytes()
+    assert copy.name.startswith("transactions-")
+
+
+def test_backup_without_data_file_raises(tmp_path):
+    with pytest.raises(StorageError, match="nothing to back up"):
+        backup(tmp_path / "nope.json", tmp_path / "backups")
+
+
+def test_backup_keeps_only_newest(tmp_path):
+    path = tmp_path / "transactions.json"
+    save_transactions(path, TRANSACTIONS)
+    backup_dir = tmp_path / "backups"
+    backup_dir.mkdir()
+    for day in range(1, 6):  # five old backups from January 2026
+        (backup_dir / f"transactions-2026010{day}-000000.json").write_text("[]")
+
+    newest = backup(path, backup_dir, keep=3)
+
+    remaining = sorted(p.name for p in backup_dir.iterdir())
+    assert len(remaining) == 3
+    assert newest.name in remaining
+    assert "transactions-20260101-000000.json" not in remaining
+
+
+def test_backup_rejects_keep_below_one(tmp_path):
+    path = tmp_path / "transactions.json"
+    save_transactions(path, TRANSACTIONS)
+    with pytest.raises(ValueError, match="keep must be at least 1"):
+        backup(path, tmp_path / "backups", keep=0)
+
+
+
+
+
+
+
+def test_backup_to_given_destination(tmp_path):
+    path = tmp_path / "transactions.json"
+    save_transactions(path, TRANSACTIONS)
+    target = tmp_path / "copies" / "backup.json"
+
+    copy = backup(path, tmp_path / "backups", destination=target)
+
+    assert copy == target
+    assert target.read_bytes() == path.read_bytes()
+
+
+def test_backup_never_overwrites_given_destination(tmp_path):
+    path = tmp_path / "transactions.json"
+    save_transactions(path, TRANSACTIONS)
+    target = tmp_path / "backup.json"
+    target.write_text("old backup", encoding="utf-8")
+
+    with pytest.raises(StorageError, match="already exists"):
+        backup(path, tmp_path / "backups", destination=target)
+
+    assert target.read_text(encoding="utf-8") == "old backup"
+
+
+def test_backup_with_destination_does_not_delete_other_backups(tmp_path):
+    path = tmp_path / "transactions.json"
+    save_transactions(path, TRANSACTIONS)
+    backup_dir = tmp_path / "backups"
+    backup_dir.mkdir()
+    for day in range(1, 6):
+        (backup_dir / f"transactions-2026010{day}-000000.json").write_text("[]")
+
+    backup(path, backup_dir, keep=1, destination=tmp_path / "extra.json")
+
+    assert len(list(backup_dir.iterdir())) == 5
